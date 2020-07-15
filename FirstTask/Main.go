@@ -1,4 +1,4 @@
-package main
+package FirstTask
 
 import (
 	"fmt"
@@ -53,7 +53,7 @@ func fibonacci() func() int {
 	}
 }
 
-func main() {
+func Main() {
 	//Упражнение: циклы и функции
 	fmt.Println(math.Sqrt(2))
 	fmt.Println(mySqrt(2))
