@@ -16,3 +16,5 @@
 
 # GOLand folders
 .idea/
+
+.DS_Store
