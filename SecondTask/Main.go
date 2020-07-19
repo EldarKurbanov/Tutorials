@@ -2,15 +2,22 @@ package SecondTask
 
 import (
 	"fmt"
+	"io/ioutil"
+	"math"
 	"math/rand"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // Постоянные
 const MIN int = 1
 const MAX int = 20
+
+// Вспомогательные структуры данных
+type void struct{}
+var member void
 
 // Раздел вспомогательных функций
 func randomInt(min int, max int) int {
@@ -24,6 +31,15 @@ func randomSlice() []int {
 	}
 	return mySlice
 }
+
+func randomBigSlice() []int {
+	mySlice := make([]int, randomInt(math.MaxInt32 / 10000, math.MaxInt32 / 1000))
+	for i := range mySlice {
+		mySlice[i] = randomInt(0, 500)
+	}
+	return mySlice
+}
+
 // Конец раздела вспомогательных функций
 
 // Код заданий
@@ -123,7 +139,7 @@ func slice12(s *[]int, i int)  {
 	}
 }
 
-// Slice 13: Вернуть пользователю копию пераднного slice:
+// Slice 13: Вернуть пользователю копию пераднного slice
 func slice13(s *[]int) []int {
 	s2 := make([]int, len(*s))
 	copy(s2, *s)
@@ -139,7 +155,7 @@ func slice14(s *[]int) {
 	}
 }
 
-// Slice 15: Упорядочить slice в порядке: прямом, обратном, лексикографическом:
+// Slice 15: Упорядочить slice в порядке: прямом, обратном, лексикографическом
 func slice15(s *[]int) ([]int, []int, []int) {
 	sliceDirectOrder := slice13(s)
 	sliceReverseOrder := slice13(s)
@@ -159,6 +175,74 @@ func slice15(s *[]int) ([]int, []int, []int) {
 		sliceLexicographicOrder[i], _ = strconv.Atoi(sliceLexicographicOrderStrings[i])
 	}
 	return sliceDirectOrder, sliceReverseOrder, sliceLexicographicOrder
+}
+
+// Map 1: Есть текст, надо посчитать сколько раз каждое слова встречается
+func map1(text string) map[string]int {
+	text = strings.ToLower(text)
+	words := strings.Fields(text)
+	resultMap := make(map[string]int)
+	for i := range words {
+		resultMap[words[i]]++
+	}
+	return resultMap
+}
+
+// Map 2: Есть очень большой массив или slice целых чисел, надо сказать какие числа в нем упоминаются хоть по разу
+func map2(s []int) []int {
+	set := make(map[int]void)
+	for i := range s {
+		set[s[i]] = member
+	}
+	result := make([]int, len(set))
+	i := 0
+	for number, _ := range set {
+		result[i] = number
+		i++
+	}
+	return result
+}
+
+// Map 3: Есть два больших массива чисел, надо найти, какие числа упоминаются в обоих
+func map3(s1 []int, s2 []int) []int {
+	set1 := map2(s1)
+	set2 := map2(s2)
+	set3 := make(map[int]void)
+	for number, _ := range set1 {
+		set3[number] = member
+	}
+	for number, _ := range set2 {
+		set3[number] = member
+	}
+	result := make([]int, len(set3))
+	i := 0
+	for number, _ := range set3 {
+		result[i] = number
+		i++
+	}
+	return result
+}
+
+// Map 4: Сделать Фибоначчи с мемоизацией
+func map4() func(n int) int {
+	m := make(map[int]int)
+	past := -1
+	current := 1
+	i := 0
+	return func(n int) int {
+		if m[n] == 0 {
+			// Число не было подсчитано. Считаем
+			fmt.Println("Идёт подсчёт для n =", n)
+			for i <= n {
+				newN := past + current
+				past = current
+				current = newN
+				m[i] = newN
+				i++
+			}
+		}
+		return m[n]
+	}
 }
 
 
@@ -219,6 +303,11 @@ func Main() {
 	fmt.Println("Получившийся первый срез:", mySlice)
 	fmt.Println()
 
+	// Иногда так получается, что первый срез остаётся совсем пустым
+	if len(mySlice) == 0 {
+		mySlice = randomSlice()
+	}
+
 	fmt.Println("Slice 9: Сдвинуть все элементы slice на 1 влево. Нулевой становится последним, первый - нулевым, последний - предпоследним:")
 	fmt.Println("Начальный срез:", mySlice2)
 	slice9(&mySlice2)
@@ -271,4 +360,41 @@ func Main() {
 	fmt.Println("Сортировка в обратном порядке:", sliceReverseOrder)
 	fmt.Println("Сортировка в лексикографическом порядке:", sliceLexicographicOrder)
 	fmt.Println()
+
+	fmt.Println("Map 1: Есть текст, надо посчитать сколько раз каждое слово встречается:")
+	fmt.Println("Текст для проверки находится в файле Text.txt")
+	fmt.Println("Для сокращения результата отображаются только слова с количеством повторений больше 5000")
+	text, err := ioutil.ReadFile("SecondTask/Text.txt")
+	if err != nil {
+		fmt.Println("Файл Text.txt не открывается!")
+	}
+	myMap := map1(string(text))
+	for key, value := range myMap {
+		if value < 5000 {
+			continue
+		}
+		fmt.Println("Слово", key, "встречается", value, "раз.")
+	}
+	fmt.Println()
+
+	bigSlice := randomBigSlice()
+	fmt.Println("Map 2: Есть очень большой массив или slice целых чисел, надо сказать какие числа в нем упоминаются хоть по разу:")
+	//fmt.Println("Созданный случайно срез:")
+	//fmt.Println(bigSlice)
+	setSlice := map2(bigSlice)
+	fmt.Println("Числа, упоминающиеся в нём хоть по разу:")
+	fmt.Println(setSlice)
+	fmt.Println()
+
+	bigSlice2 := randomBigSlice()
+	fmt.Println("Map 3: Есть два больших массива чисел, надо найти, какие числа упоминаются в обоих:")
+	setSlice = map3(bigSlice, bigSlice2)
+	fmt.Println("Числа, упоминающиеся в обоих массивах:")
+	fmt.Println(setSlice)
+	fmt.Println()
+
+	fmt.Println("Map 4: Сделать Фибоначчи с мемоизацией:")
+	fib := map4()
+	fmt.Println("N = 10:", fib(10))
+	fmt.Println("N = 6:", fib(6))
 }
