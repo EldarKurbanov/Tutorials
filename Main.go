@@ -1,8 +1,9 @@
 package main
 
-import "Tutorials/SecondTask"
+import "Tutorials/ThirdTask"
 
 func main() {
 	//FirstTask.Main()
-	SecondTask.Main()
+	//SecondTask.Main()
+	ThirdTask.Main()
 }
