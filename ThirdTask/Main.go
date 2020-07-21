@@ -101,6 +101,24 @@ func (img Image) At(x int, y int) color.Color {
 
 // Конец раздела задания 1
 
+// Задание 2: Мапа с товарами. Написать методы добавления, удаления, изменения цены товара, изменения имени товара.
+func AddProduct(products *map[string]float32, name string, price float32) {
+	(*products)[name] = price
+}
+
+func RemoveProduct(products *map[string]float32, name string) {
+	delete(*products, name)
+}
+
+func ChangePriceProduct(products *map[string]float32, name string, newPrice float32) {
+	(*products)[name] = newPrice
+}
+
+func ChangeNameProduct(products *map[string]float32, oldName string, newName string) {
+	price := (*products)[oldName]
+	delete(*products, oldName)
+	(*products)[newName] = price
+}
 
 
 func Main() {
@@ -135,6 +153,22 @@ func Main() {
 
 	fmt.Println("---------------------------------------------------------") // Конец первого задания
 
-	fmt.Println()
+	products := make(map[string]float32)
+	fmt.Println("Задание 2: Мапа с товарами. Написать методы добавления, удаления, изменения цены товара, изменения имени товара:")
+	fmt.Println("Добавим немного товаров...")
+	AddProduct(&products, "Кукуруза вареная в/у, 450 г", 59.99)
+	AddProduct(&products, "Баклажаны грунтовые, 1 кг", 49.89)
+	AddProduct(&products, "Арбуз Чёрный Принц, 1 кг", 49.99)
+	AddProduct(&products, "Фасоль стручковая резаная зам, 1 кг Импорт", 103.19)
+	fmt.Println(products)
+	fmt.Println("Удалим фасоль...")
+	RemoveProduct(&products, "Фасоль стручковая резаная зам, 1 кг Импорт")
+	fmt.Println(products)
+	fmt.Println("Изменим цену на кукурузу...")
+	ChangePriceProduct(&products, "Кукуруза вареная в/у, 450 г", 59.98)
+	fmt.Println(products)
+	fmt.Println("Сделаем название арбуза более политкорректным...")
+	ChangeNameProduct(&products, "Арбуз Чёрный Принц, 1 кг", "Арбуз Тёмный Принц, 1 кг")
+	fmt.Println(products)
 
 }
