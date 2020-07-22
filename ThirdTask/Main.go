@@ -9,6 +9,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -120,8 +121,83 @@ func ChangeNameProduct(products *map[string]float32, oldName string, newName str
 	(*products)[newName] = price
 }
 
+// Задание 3: Пользователь даёт список товаров, программа должна по map с наименованиями товаров посчитать сумму заказа
+func CalculateSumOrder(products *map[string]float32, productsInOrder []string) float32 {
+	var sum float32
+	for i := range productsInOrder {
+		sum += (*products)[productsInOrder[i]]
+	}
+	return sum
+}
+
+
+// Задание 4: Сделать 1е, но у нас приходит несколько сотен таких списков заказов и мы хотим запоминать уже посчитанные заказы, чтобы если встречается такой же, то сразу говорить его цену без расчёта.
+func CalculateSumOrderWithMemory() func (products *map[string]float32, productsInOrder []string) float32 {
+	memory := make(map[string]float32)
+	return func(products *map[string]float32, productsInOrder []string) float32 {
+		var productsInOrderKey string
+		for i := range productsInOrder {
+			productsInOrderKey += productsInOrder[i]
+		}
+		if memory[productsInOrderKey] == 0 {
+			fmt.Println("Идёт подсчёт суммы...")
+			memory[productsInOrderKey] = CalculateSumOrder(products, productsInOrder)
+		} else {
+			fmt.Println("Сумма берётся из памяти...")
+		}
+		return memory[productsInOrderKey]
+	}
+}
+
+// Задание 5: Сделать пользовательские аккаунты со счетом типа "вася: 300р, петя: 30000000р"
+func makeTestAccounts(accounts *map[string]float32) {
+	(*accounts)["Вася"] = 300
+	(*accounts)["Петя"] = 30000000
+}
+
+// Есть map аккаунтов и счетов, как описано в 3. Надо вывести ее в отсортированном виде с сортировкой: по имени в алфавитном порядке, по имени в обратном порядке, по количеству денег по убыванию
+// Заимствование из https://stackoverflow.com/a/18695740
+type Pair struct {
+	Key string
+	Value float32
+}
+
+type PairList []Pair
+
+func (p PairList) Len() int { return len(p) }
+func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
+func (p PairList) Swap(i, j int){ p[i], p[j] = p[j], p[i] }
+// Конец заимствования из https://stackoverflow.com/a/18695740
+
+func sortMap(sortableMap *map[string]float32) {
+	keysProducts := make([]string, 0)
+	for k, _ := range *sortableMap {
+		keysProducts = append(keysProducts, k)
+	}
+	sort.Strings(keysProducts)
+	fmt.Println("По имени в алфавитном порядке:")
+	for i := range keysProducts {
+		fmt.Println(keysProducts[i], (*sortableMap)[keysProducts[i]])
+	}
+	fmt.Println("По имени в обратном порядке:")
+	sort.Sort(sort.Reverse(sort.StringSlice(keysProducts)))
+	for i := range keysProducts {
+		fmt.Println(keysProducts[i], (*sortableMap)[keysProducts[i]])
+	}
+	pairList := make(PairList, len(*sortableMap))
+	i := 0
+	for key, value := range *sortableMap {
+		pairList[i] = Pair{key, value}
+		i++
+	}
+	sort.Sort(sort.Reverse(pairList))
+	fmt.Println("По количеству денег по убыванию:")
+	fmt.Println(pairList)
+}
+
 
 func Main() {
+	defer fmt.Println("Конец программы!")
 	fmt.Println("Задание 1: https://tour.golang.org/ Раздел методы и интерфейсы:")
 	fmt.Println()
 
@@ -170,5 +246,36 @@ func Main() {
 	fmt.Println("Сделаем название арбуза более политкорректным...")
 	ChangeNameProduct(&products, "Арбуз Чёрный Принц, 1 кг", "Арбуз Тёмный Принц, 1 кг")
 	fmt.Println(products)
+	fmt.Println()
 
+	fmt.Println("Задание 3: Пользователь даёт список товаров, программа должна по map с наименованиями товаров посчитать сумму заказа:")
+	fmt.Println("Я хочу купить две кукурузы и баклажан")
+	myOrder := []string{"Кукуруза вареная в/у, 450 г", "Кукуруза вареная в/у, 450 г", "Баклажаны грунтовые, 1 кг"}
+	fmt.Println("Итого придётся потратить:", CalculateSumOrder(&products, myOrder))
+	fmt.Println()
+
+	fmt.Println("Задание 4: Сделать 1е, но у нас приходит несколько сотен таких списков заказов и мы хотим запоминать уже посчитанные заказы, чтобы если встречается такой же, то сразу говорить его цену без расчёта:")
+	myOrder2 := []string{"Арбуз Тёмный Принц, 1 кг"}
+	f := CalculateSumOrderWithMemory()
+	fmt.Println("Заказываю две кукурузы и баклажан!")
+	fmt.Println("С вас:", f(&products, myOrder))
+	fmt.Println("Заказываю арбуз!")
+	fmt.Println("С вас:", f(&products, myOrder2))
+	fmt.Println("Заказываю две кукузы и баклажан!")
+	fmt.Println("С вас:", f(&products, myOrder))
+	fmt.Println()
+
+	accounts := make(map[string]float32)
+	fmt.Println("Задание 5: Сделать пользовательские аккаунты со счетом типа \"вася: 300р, петя: 30000000р\":")
+	makeTestAccounts(&accounts)
+	fmt.Println(accounts)
+	fmt.Println()
+
+	fmt.Println("Задание 6: Есть map аккаунтов и счетов, как описано в 3. Надо вывести ее в отсортированном виде с сортировкой: по имени в алфавитном порядке, по имени в обратном порядке, по количеству денег по убыванию:")
+	fmt.Println("Сортируем товары:")
+	sortMap(&products)
+	fmt.Println()
+	fmt.Println("Сортируем аккаунты:")
+	sortMap(&accounts)
+	fmt.Println()
 }
