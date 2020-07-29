@@ -10,6 +10,7 @@ import (
 	"math"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -149,6 +150,10 @@ func CalculateSumOrderWithMemory() func (products *map[string]float32, productsI
 	}
 }
 
+func AddAccount(accounts *map[string]float32, name string, balance float32) {
+	(*accounts)[name] = balance
+}
+
 // Задание 5: Сделать пользовательские аккаунты со счетом типа "вася: 300р, петя: 30000000р"
 func makeTestAccounts(accounts *map[string]float32) {
 	(*accounts)["Вася"] = 300
@@ -168,6 +173,97 @@ func (p PairList) Len() int { return len(p) }
 func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p PairList) Swap(i, j int){ p[i], p[j] = p[j], p[i] }
 // Конец заимствования из https://stackoverflow.com/a/18695740
+
+// функция sortmap разделена на куски и возвращает значения
+func sortMapByName(sortableMap *map[string]float32) []string {
+	keysProducts := make([]string, 0)
+	for k, _ := range *sortableMap {
+		keysProducts = append(keysProducts, k)
+	}
+	sort.Strings(keysProducts)
+	return keysProducts
+}
+
+func sortMapByNameReverse(sortableMap *map[string]float32) []string {
+	keysProducts := make([]string, 0)
+	for k, _ := range *sortableMap {
+		keysProducts = append(keysProducts, k)
+	}
+	sort.Sort(sort.Reverse(sort.StringSlice(keysProducts)))
+	return keysProducts
+}
+
+func sortMapByPrice(sortableMap *map[string]float32) []string {
+	pairList := make(PairList, len(*sortableMap))
+	i := 0
+	for key, value := range *sortableMap {
+		pairList[i] = Pair{key, value}
+		i++
+	}
+	sort.Sort(sort.Reverse(pairList))
+
+	keysProducts := make([]string, 0)
+	for _, v := range pairList {
+		keysProducts = append(keysProducts, v.Key)
+	}
+	return keysProducts
+}
+
+type Account struct {
+	name    string
+	balance uint64
+}
+
+
+// функция sortmap разделена на куски и возвращает значения
+func sortMapByNameA(sortableMap *map[string]float32) []Account {
+	keysProducts := make([]string, 0)
+	for k, _ := range *sortableMap {
+		keysProducts = append(keysProducts, k)
+	}
+	sort.Strings(keysProducts)
+	result := make([]Account, 0)
+	for i := range keysProducts {
+		result = append(result, Account{name: keysProducts[i], balance: uint64((*sortableMap)[keysProducts[i]])})
+	}
+	return result
+}
+
+func sortMapByNameReverseA(sortableMap *map[string]float32) []Account {
+	keysProducts := make([]string, 0)
+	for k, v := range *sortableMap {
+		keysProducts = append(keysProducts, k + " " + strconv.Itoa(int(v)))
+	}
+	sort.Sort(sort.Reverse(sort.StringSlice(keysProducts)))
+	result := make([]Account, 0)
+	for i := range keysProducts {
+		result = append(result, Account{name: keysProducts[i], balance: uint64((*sortableMap)[keysProducts[i]])})
+	}
+	return result
+}
+
+
+func sortMapByPriceA(sortableMap *map[string]float32) []Account {
+	pairList := make(PairList, len(*sortableMap))
+	i := 0
+	for key, value := range *sortableMap {
+		pairList[i] = Pair{key, value}
+		i++
+	}
+	sort.Sort(sort.Reverse(pairList))
+
+	keysProducts := make([]string, 0)
+	for _, v := range pairList {
+		keysProducts = append(keysProducts, v.Key + " " + strconv.Itoa(int(v.Value)))
+	}
+	result := make([]Account, 0)
+	for i := range keysProducts {
+		result = append(result, Account{name: keysProducts[i], balance: uint64((*sortableMap)[keysProducts[i]])})
+	}
+	return result
+}
+
+
 
 func sortMap(sortableMap *map[string]float32) {
 	keysProducts := make([]string, 0)
@@ -278,4 +374,6 @@ func Main() {
 	fmt.Println("Сортируем аккаунты:")
 	sortMap(&accounts)
 	fmt.Println()
+
+	fmt.Println(sortMapByName(&products))
 }
